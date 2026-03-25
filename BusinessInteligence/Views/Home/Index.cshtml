@@ -1,8 +1,20 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Página Inicial";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Inteligência de Vendas de Padaria</h1>
+    <p class="lead">Business Intelligence & Mineração de Dados . Previsão de vendas de padaria.</p>
+    <hr />
+    <div class="row mt-4">
+        <div class="col-md-6 offset-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Previsão de Vendas Diárias</h5>
+                    <p class="card-text">Quantos artigos serão vendidos num determinado dia? Treine o modelo com dados históricos e preveja vendas por dia da semana, período e tipo de dia.</p>
+                    <a asp-action="Predict" class="btn btn-primary">Ir para Previsões</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

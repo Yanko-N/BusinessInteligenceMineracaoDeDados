@@ -1,0 +1,240 @@
+@{
+    ViewData["Title"] = "Previsão de Vendas";
+    var prediction = ViewBag.Prediction as Application.Models.PredictionResult;
+    var error = ViewBag.Error as string;
+    var trainSuccess = TempData["TrainSuccess"] as string;
+    var trainError = TempData["TrainError"] as string;
+}
+
+<div class="container">
+    <h1 class="mb-4">Previsão de Vendas de Padaria</h1>
+
+    @if (!string.IsNullOrEmpty(trainSuccess))
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Treino Concluído!</strong> @trainSuccess
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(trainError))
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Treino Falhou:</strong> @trainError
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">1. Treinar o Modelo</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Carregar o CSV de vendas da padaria e calcular estatísticas de ~20.000 transações.</p>
+                    <form method="post" asp-action="Train">
+                        <button type="submit" class="btn btn-primary w-100">
+                            Treinar Modelo
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">2. Prever Vendas Diárias</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="PredictResult">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Dia da Semana</label>
+                            <select name="dayOfWeek" id="dayOfWeek" class="form-select">
+                                <option value="0">Domingo</option>
+                                <option value="1" selected>Segunda-feira</option>
+                                <option value="2">Terça-feira</option>
+                                <option value="3">Quarta-feira</option>
+                                <option value="4">Quinta-feira</option>
+                                <option value="5">Sexta-feira</option>
+                                <option value="6">Sábado</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Período do Dia</label>
+                            <select name="periodDay" class="form-select">
+                                <option value="morning" selected>Manhã</option>
+                                <option value="afternoon">Tarde</option>
+                                <option value="evening">Entardecer</option>
+                                <option value="night">Noite</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Tipo de Dia</label>
+                            <select name="typeOfDay" id="typeOfDay" class="form-select" disabled>
+                                <option value="weekday" selected>Dia Útil</option>
+                                <option value="weekend">Fim de Semana</option>
+                            </select>
+                            <input type="hidden" name="typeOfDay" id="typeOfDayHidden" value="weekday" />
+                            <small class="form-text text-muted">Definido automaticamente com base no dia selecionado.</small>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            Prever
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="alert alert-warning">
+                    <strong>Erro:</strong> @error
+                </div>
+            }
+
+            @if (prediction != null)
+            {
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Resultados da Previsão</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="text-muted">
+                            Para <strong>@prediction.DayName</strong> (@prediction.DayType) &mdash; <strong>@prediction.Period</strong>
+                        </h6>
+                        <hr />
+                        <div class="row text-center">
+                            <div class="col-md-6">
+                                <div class="card bg-light p-3 mb-3">
+                                    <h3 class="text-primary mb-0">@prediction.PredictedDailySalesCount</h3>
+                                    <small class="text-muted">Artigos Previstos (Dia Completo)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card bg-light p-3 mb-3">
+                                    <h3 class="text-success mb-0">@prediction.PredictedPeriodSalesCount</h3>
+                                    <small class="text-muted">Artigos Previstos (@prediction.Period)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr />
+                        <h6 class="fw-bold">Métricas de Qualidade do Modelo</h6>
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <div class="card border-primary p-2 mb-3">
+                                    <h4 class="mb-0 text-primary">@prediction.RSquared</h4>
+                                    <small class="text-muted">R² (Coeficiente de Determinação)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-warning p-2 mb-3">
+                                    <h4 class="mb-0 text-warning">@prediction.MAE</h4>
+                                    <small class="text-muted">MAE (Erro Absoluto Médio)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-danger p-2 mb-3">
+                                    <h4 class="mb-0 text-danger">@prediction.RMSE</h4>
+                                    <small class="text-muted">RMSE (Raiz do Erro Quadrático Médio)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h6 class="fw-bold">Detalhes da Previsão</h6>
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <div class="card border-success p-2 mb-3">
+                                    <h4 class="mb-0 text-success">@(prediction.Confidence)%</h4>
+                                    <small class="text-muted">Índice de Confiança</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-secondary p-2 mb-3">
+                                    <h4 class="mb-0">@prediction.SampleCount</h4>
+                                    <small class="text-muted">Contagem de Amostras (dias observados)</small>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card border-info p-2 mb-3">
+                                    <h4 class="mb-0 text-info">±@prediction.StandardDeviation</h4>
+                                    <small class="text-muted">Desvio Padrão</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (prediction.TopProducts.Any())
+                {
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="mb-0">Top 5 Produtos deste Período</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-striped mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Produto</th>
+                                        <th>Quantidade</th>
+                                        <th>Quota</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{ var rank = 1; }
+                                    @foreach (var product in prediction.TopProducts)
+                                    {
+                                        <tr>
+                                            <td>@rank</td>
+                                            <td><strong>@product.ProductName</strong></td>
+                                            <td>@product.Count</td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar bg-success" style="width: @product.Percentage%">
+                                                        @product.Percentage%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        rank++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            }
+            else if (string.IsNullOrEmpty(error))
+            {
+                <div class="card">
+                    <div class="card-body text-center text-muted py-5">
+                        <h4>Sem previsão ainda</h4>
+                        <p>Primeiro <strong>Treine o Modelo</strong>, depois selecione os parâmetros e clique em <strong>Prever</strong>.</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var daySelect = document.getElementById('dayOfWeek');
+            var typeSelect = document.getElementById('typeOfDay');
+            var typeHidden = document.getElementById('typeOfDayHidden');
+
+            function syncTypeOfDay() {
+                var day = parseInt(daySelect.value);
+                var isWeekend = (day === 0 || day === 6);
+                var value = isWeekend ? 'weekend' : 'weekday';
+                typeSelect.value = value;
+                typeHidden.value = value;
+            }
+
+            daySelect.addEventListener('change', syncTypeOfDay);
+            syncTypeOfDay();
+        });
+    </script>
+}

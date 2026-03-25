@@ -1,3 +1,6 @@
+using Application.Core;
+using Application.Extensions;
+
 namespace BusinessInteligence
 {
     public class Program
@@ -8,6 +11,12 @@ namespace BusinessInteligence
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            builder.Services.AddSingleton<SalesTrainer>();
+
+            // Custom Mediator
+            builder.Services.AddCustomMediator(typeof(SalesTrainer).Assembly);
+
 
             var app = builder.Build();
 
