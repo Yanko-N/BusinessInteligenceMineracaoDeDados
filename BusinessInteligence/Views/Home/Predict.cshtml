@@ -1,220 +1,285 @@
+@using Application.Enums
 @{
     ViewData["Title"] = "Previsão de Vendas";
     var prediction = ViewBag.Prediction as Application.Models.PredictionResult;
     var error = ViewBag.Error as string;
     var trainSuccess = TempData["TrainSuccess"] as string;
     var trainError = TempData["TrainError"] as string;
+    int currentType = (int)TypeOfTraining.REGRESSION;
+    int selDayOfWeek = (int?)ViewBag.SelectedDayOfWeek ?? 1;
+    int selMonth = (int?)ViewBag.SelectedMonth ?? DateTime.Today.Month;
+    string selPeriod = ViewBag.SelectedPeriodDay as string ?? "morning";
+    string selTypeOfDay = ViewBag.SelectedTypeOfDay as string ?? "weekday";
 }
 
-<div class="container">
-    <h1 class="mb-4">Previsão de Vendas de Padaria</h1>
-
-    @if (!string.IsNullOrEmpty(trainSuccess))
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <strong>Treino Concluído!</strong> @trainSuccess
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<!-- Hero -->
+<div class="bg-primary text-white rounded-3 p-4 mb-4 shadow">
+    <div class="d-flex align-items-center">
+        <span class="bg-white bg-opacity-25 rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width:52px;height:52px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07"/>
+            </svg>
+        </span>
+        <div>
+            <h2 class="fw-bold mb-0">Regressão Linear</h2>
+            <p class="mb-0 opacity-75">FastTree Regression &bull; Previsão de artigos vendidos por dia e período</p>
         </div>
-    }
-    @if (!string.IsNullOrEmpty(trainError))
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>Treino Falhou:</strong> @trainError
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
+    </div>
+</div>
 
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">1. Treinar o Modelo</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted">Carregar o CSV de vendas da padaria e calcular estatísticas de ~20.000 transações.</p>
-                    <form method="post" asp-action="Train">
-                        <button type="submit" class="btn btn-primary w-100">
-                            Treinar Modelo
-                        </button>
-                    </form>
-                </div>
+@if (!string.IsNullOrEmpty(trainSuccess))
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <strong>Treino Concluído!</strong> @trainSuccess
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (!string.IsNullOrEmpty(trainError))
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <strong>Treino Falhou:</strong> @trainError
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <!-- Train -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-primary bg-opacity-10 border-0">
+                <h5 class="mb-0 text-primary fw-bold">
+                    <span class="badge bg-primary rounded-pill me-2">1</span>Treinar o Modelo
+                </h5>
             </div>
-
-            <div class="card">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0">2. Prever Vendas Diárias</h5>
-                </div>
-                <div class="card-body">
-                    <form method="post" asp-action="PredictResult">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Dia da Semana</label>
-                            <select name="dayOfWeek" id="dayOfWeek" class="form-select">
-                                <option value="0">Domingo</option>
-                                <option value="1" selected>Segunda-feira</option>
-                                <option value="2">Terça-feira</option>
-                                <option value="3">Quarta-feira</option>
-                                <option value="4">Quinta-feira</option>
-                                <option value="5">Sexta-feira</option>
-                                <option value="6">Sábado</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Período do Dia</label>
-                            <select name="periodDay" class="form-select">
-                                <option value="morning" selected>Manhã</option>
-                                <option value="afternoon">Tarde</option>
-                                <option value="evening">Entardecer</option>
-                                <option value="night">Noite</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Tipo de Dia</label>
-                            <select name="typeOfDay" id="typeOfDay" class="form-select" disabled>
-                                <option value="weekday" selected>Dia Útil</option>
-                                <option value="weekend">Fim de Semana</option>
-                            </select>
-                            <input type="hidden" name="typeOfDay" id="typeOfDayHidden" value="weekday" />
-                            <small class="form-text text-muted">Definido automaticamente com base no dia selecionado.</small>
-                        </div>
-                        <button type="submit" class="btn btn-success w-100">
-                            Prever
-                        </button>
-                    </form>
-                </div>
+            <div class="card-body">
+                <p class="text-muted small">Treinar modelo de regressão com dados de vendas diárias.</p>
+                <form method="post" asp-action="Train">
+                    <input type="hidden" name="returnUrl" value="@Url.Action("Predict")" />
+                    <input type="hidden" name="typeOfTraining" value="@currentType" />
+                    <button type="submit" class="btn btn-primary w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cpu me-1 mb-1" viewBox="0 0 16 16">
+                            <path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2A2.5 2.5 0 0 1 14 4.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14A2.5 2.5 0 0 1 11.5 14v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14A2.5 2.5 0 0 1 2 11.5H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2A2.5 2.5 0 0 1 4.5 2V.5A.5.5 0 0 1 5 0"/>
+                        </svg>
+                        Treinar Modelo
+                    </button>
+                </form>
             </div>
         </div>
 
-        <div class="col-md-8">
-            @if (!string.IsNullOrEmpty(error))
-            {
-                <div class="alert alert-warning">
-                    <strong>Erro:</strong> @error
-                </div>
-            }
-
-            @if (prediction != null)
-            {
-                <div class="card mb-4">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="mb-0">Resultados da Previsão</h5>
+        <!-- Predict Form -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-success bg-opacity-10 border-0">
+                <h5 class="mb-0 text-success fw-bold">
+                    <span class="badge bg-success rounded-pill me-2">2</span>Prever Vendas Diárias
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-action="PredictResult">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Dia da Semana</label>
+                        <select name="dayOfWeek" id="dayOfWeek" class="form-select">
+                            <!option value="0" selected="@(selDayOfWeek == 0)">Domingo</!option>
+                            <!option value="1" selected="@(selDayOfWeek == 1)">Segunda-feira</!option>
+                            <!option value="2" selected="@(selDayOfWeek == 2)">Terça-feira</!option>
+                            <!option value="3" selected="@(selDayOfWeek == 3)">Quarta-feira</!option>
+                            <!option value="4" selected="@(selDayOfWeek == 4)">Quinta-feira</!option>
+                            <!option value="5" selected="@(selDayOfWeek == 5)">Sexta-feira</!option>
+                            <!option value="6" selected="@(selDayOfWeek == 6)">Sábado</!option>
+                        </select>
                     </div>
-                    <div class="card-body">
-                        <h6 class="text-muted">
-                            Para <strong>@prediction.DayName</strong> (@prediction.DayType) &mdash; <strong>@prediction.Period</strong>
-                        </h6>
-                        <hr />
-                        <div class="row text-center">
-                            <div class="col-md-6">
-                                <div class="card bg-light p-3 mb-3">
-                                    <h3 class="text-primary mb-0">@prediction.PredictedDailySalesCount</h3>
-                                    <small class="text-muted">Artigos Previstos (Dia Completo)</small>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card bg-light p-3 mb-3">
-                                    <h3 class="text-success mb-0">@prediction.PredictedPeriodSalesCount</h3>
-                                    <small class="text-muted">Artigos Previstos (@prediction.Period)</small>
-                                </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Mês</label>
+                        <select name="month" class="form-select">
+                            <!option value="1" selected="@(selMonth == 1)">Janeiro</!option>
+                            <!option value="2" selected="@(selMonth == 2)">Fevereiro</!option>
+                            <!option value="3" selected="@(selMonth == 3)">Março</!option>
+                            <!option value="4" selected="@(selMonth == 4)">Abril</!option>
+                            <!option value="5" selected="@(selMonth == 5)">Maio</!option>
+                            <!option value="6" selected="@(selMonth == 6)">Junho</!option>
+                            <!option value="7" selected="@(selMonth == 7)">Julho</!option>
+                            <!option value="8" selected="@(selMonth == 8)">Agosto</!option>
+                            <!option value="9" selected="@(selMonth == 9)">Setembro</!option>
+                            <!option value="10" selected="@(selMonth == 10)">Outubro</!option>
+                            <!option value="11" selected="@(selMonth == 11)">Novembro</!option>
+                            <!option value="12" selected="@(selMonth == 12)">Dezembro</!option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Período do Dia</label>
+                        <select name="periodDay" class="form-select">
+                            <!option value="morning" selected="@(selPeriod == "morning")">Manhã</!option>
+                            <!option value="afternoon" selected="@(selPeriod == "afternoon")">Tarde</!option>
+                            <!option value="evening" selected="@(selPeriod == "evening")">Anoitecer</!option>
+                            <!option value="night" selected="@(selPeriod == "night")">Noite</!option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tipo de Dia</label>
+                        <select name="typeOfDay" id="typeOfDay" class="form-select" disabled>
+                            <!option value="weekday" selected="@(selTypeOfDay == "weekday")">Dia Útil</!option>
+                            <!option value="weekend" selected="@(selTypeOfDay == "weekend")">Fim de Semana</!option>
+                        </select>
+                        <input type="hidden" name="typeOfDay" id="typeOfDayHidden" value="@selTypeOfDay" />
+                        <small class="form-text text-muted">Definido automaticamente com base no dia selecionado.</small>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning me-1 mb-1" viewBox="0 0 16 16">
+                            <path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641z"/>
+                        </svg>
+                        Prever
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="alert alert-warning shadow-sm">
+                <strong>Erro:</strong> @error
+            </div>
+        }
+
+        @if (prediction != null)
+        {
+            <!-- Main Results -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 pb-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="fw-bold mb-0">Resultados da Previsão</h5>
+                            <p class="text-muted mb-0 mt-1">
+                                Para <strong>@prediction.DayName</strong> (@prediction.DayType) : <strong>@prediction.Period</strong>
+                            </p>
+                        </div>
+                        @if (prediction.UsesMLEngine)
+                        {
+                            <span class="badge bg-success">ML.NET FastTree</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Média Estatística</span>
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="bg-primary bg-opacity-10 rounded-3 p-3 text-center">
+                                <h2 class="text-primary fw-bold mb-0">@prediction.PredictedDailySalesCount</h2>
+                                <small class="text-muted">Artigos Previstos (Dia Completo)</small>
                             </div>
                         </div>
-
-                        <hr />
-                        <h6 class="fw-bold">Métricas de Qualidade do Modelo</h6>
-                        <div class="row text-center">
-                            <div class="col-md-4">
-                                <div class="card border-primary p-2 mb-3">
-                                    <h4 class="mb-0 text-primary">@prediction.RSquared</h4>
-                                    <small class="text-muted">R² (Coeficiente de Determinação)</small>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="card border-warning p-2 mb-3">
-                                    <h4 class="mb-0 text-warning">@prediction.MAE</h4>
-                                    <small class="text-muted">MAE (Erro Absoluto Médio)</small>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="card border-danger p-2 mb-3">
-                                    <h4 class="mb-0 text-danger">@prediction.RMSE</h4>
-                                    <small class="text-muted">RMSE (Raiz do Erro Quadrático Médio)</small>
-                                </div>
+                        <div class="col-md-6">
+                            <div class="bg-success bg-opacity-10 rounded-3 p-3 text-center">
+                                <h2 class="text-success fw-bold mb-0">@prediction.PredictedPeriodSalesCount</h2>
+                                <small class="text-muted">Artigos Previstos (@prediction.Period)</small>
                             </div>
                         </div>
+                    </div>
 
-                        <h6 class="fw-bold">Detalhes da Previsão</h6>
-                        <div class="row text-center">
-                            <div class="col-md-4">
-                                <div class="card border-success p-2 mb-3">
-                                    <h4 class="mb-0 text-success">@(prediction.Confidence)%</h4>
-                                    <small class="text-muted">Índice de Confiança</small>
-                                </div>
+                    <h6 class="fw-bold text-muted text-uppercase small mb-3">Métricas de Qualidade</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <div class="border rounded-3 p-3 text-center">
+                                <h4 class="mb-0 text-primary fw-bold">@prediction.RSquared</h4>
+                                <small class="text-muted">R²</small>
                             </div>
-                            <div class="col-md-4">
-                                <div class="card border-secondary p-2 mb-3">
-                                    <h4 class="mb-0">@prediction.SampleCount</h4>
-                                    <small class="text-muted">Contagem de Amostras (dias observados)</small>
-                                </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded-3 p-3 text-center">
+                                <h4 class="mb-0 text-warning fw-bold">@prediction.MAE</h4>
+                                <small class="text-muted">MAE</small>
                             </div>
-                            <div class="col-md-4">
-                                <div class="card border-info p-2 mb-3">
-                                    <h4 class="mb-0 text-info">±@prediction.StandardDeviation</h4>
-                                    <small class="text-muted">Desvio Padrão</small>
-                                </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded-3 p-3 text-center">
+                                <h4 class="mb-0 text-danger fw-bold">@prediction.RMSE</h4>
+                                <small class="text-muted">RMSE</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-muted text-uppercase small mb-3">Detalhes da Previsão</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="border rounded-3 p-3 text-center">
+                                <h4 class="mb-0 text-success fw-bold">@(prediction.Confidence)%</h4>
+                                <small class="text-muted">Confiança</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded-3 p-3 text-center">
+                                <h4 class="mb-0 fw-bold">@prediction.SampleCount</h4>
+                                <small class="text-muted">Amostras</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded-3 p-3 text-center">
+                                <h4 class="mb-0 text-info fw-bold">±@prediction.StandardDeviation</h4>
+                                <small class="text-muted">Desvio Padrão</small>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                @if (prediction.TopProducts.Any())
-                {
-                    <div class="card">
-                        <div class="card-header bg-warning text-dark">
-                            <h5 class="mb-0">Top 5 Produtos deste Período</h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <table class="table table-striped mb-0">
-                                <thead>
+            @if (prediction.TopProducts.Any())
+            {
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="fw-bold mb-0">Top 5 Produtos deste Período</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">#</th>
+                                    <th>Produto</th>
+                                    <th>Quantidade</th>
+                                    <th>Quota</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ var rank = 1; }
+                                @foreach (var product in prediction.TopProducts)
+                                {
                                     <tr>
-                                        <th>#</th>
-                                        <th>Produto</th>
-                                        <th>Quantidade</th>
-                                        <th>Quota</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @{ var rank = 1; }
-                                    @foreach (var product in prediction.TopProducts)
-                                    {
-                                        <tr>
-                                            <td>@rank</td>
-                                            <td><strong>@product.ProductName</strong></td>
-                                            <td>@product.Count</td>
-                                            <td>
-                                                <div class="progress" style="height: 20px;">
-                                                    <div class="progress-bar bg-success" style="width: @product.Percentage%">
-                                                        @product.Percentage%
-                                                    </div>
+                                        <td class="ps-4">
+                                            <span class="badge bg-success rounded-pill">@rank</span>
+                                        </td>
+                                        <td><strong>@product.ProductName</strong></td>
+                                        <td>@product.Count</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                    <div class="progress-bar bg-success" style="width: @product.Percentage%"></div>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                        rank++;
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                }
-            }
-            else if (string.IsNullOrEmpty(error))
-            {
-                <div class="card">
-                    <div class="card-body text-center text-muted py-5">
-                        <h4>Sem previsão ainda</h4>
-                        <p>Primeiro <strong>Treine o Modelo</strong>, depois selecione os parâmetros e clique em <strong>Prever</strong>.</p>
+                                                <small class="text-muted">@product.Percentage%</small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    rank++;
+                                }
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             }
-        </div>
+        }
+        else if (string.IsNullOrEmpty(error))
+        {
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center text-muted py-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-bar-chart mb-3 opacity-25" viewBox="0 0 16 16">
+                        <path d="M4 11H2v3h2zm5-4H7v7h2zm5-5h-2v12h2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1z"/>
+                    </svg>
+                    <h4>Sem previsão ainda</h4>
+                    <p class="mb-0">Primeiro <strong>Treine o Modelo</strong>, depois selecione os parâmetros e clique em <strong>Prever</strong>.</p>
+                </div>
+            </div>
+        }
     </div>
 </div>
 

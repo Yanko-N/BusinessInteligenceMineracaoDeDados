@@ -29,7 +29,7 @@
 - **20.507 linhas**, **94 produtos únicos**
 - **5 colunas:** Transaction, Item, date_time, period_day, weekday_weekend
 - Mostrar uma pequena tabela de exemplo (5–6 linhas do CSV)
-- Mencionar: cada linha = um item numa transação; várias linhas podem partilhar o mesmo ID de transação
+- Mencionar: cada linha = um item numa venda; várias linhas podem partilhar o mesmo ID de venda
 
 ---
 
@@ -77,10 +77,10 @@ Mostrar o diagrama do ciclo de 6 fases:
 | Categoria    | Questão                            | Tipo de Modelo    |
 |------------------|----------------------------------------------------------------|----------------------|
 | Regressão    | Quantos itens serão vendidos num dado dia?           | Regressão      |
-| Regressão    | Quantas transações por período do dia?             | Regressão      |
+| Regressão    | Quantas vendas por período do dia?             | Regressão      |
 | Classificação  | Qual o produto mais provável a uma dada hora?         | Multi-classe     |
-| Classificação  | A transação é num dia de semana ou fim de semana?       | Binária       |
-| Classificação  | A que período do dia pertence a transação?           | Multi-classe     |
+| Classificação  | A venda é num dia de semana ou fim de semana?       | Binária       |
+| Classificação  | A que período do dia pertence a venda?           | Multi-classe     |
 | Previsão     | Como serão as vendas diárias nos próximos 7–30 dias?      | Séries temporais (SSA)|
 | Previsão     | Tendência de um produto específico nas próximas semanas?    | Séries temporais (SSA)|
 
@@ -88,7 +88,7 @@ Mostrar o diagrama do ciclo de 6 fases:
 
 ## Slide 8 Modelos de Regressão
 
-- **Objetivo:** Prever valores contínuos (contagem diária de vendas, transações por período)
+- **Objetivo:** Prever valores contínuos (contagem diária de vendas, vendas por período)
 - **Algoritmos:** FastTree, SDCA, LightGBM (selecionados via AutoML)
 - **Pipeline:** Features → Concatenar → Normalizar → Treinar → Avaliar
 - **Input:** DayOfWeek, Month, PeriodDay, TypeOfDay, HourOfDay

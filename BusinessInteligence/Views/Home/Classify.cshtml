@@ -1,0 +1,387 @@
+@using Application.Enums
+@{
+    ViewData["Title"] = "Classificação";
+    var productPrediction = ViewBag.ProductPrediction as Application.Models.ClassificationResult;
+    var dayTypePrediction = ViewBag.DayTypePrediction as Application.Models.DayTypePredictionResult;
+    var productError = ViewBag.ProductError as string;
+    var dayTypeError = ViewBag.DayTypeError as string;
+    var trainSuccess = TempData["TrainSuccess"] as string;
+    var trainError = TempData["TrainError"] as string;
+    var uniqueProducts = ViewBag.UniqueProducts as List<string> ?? new List<string>();
+    int currentType = (int)TypeOfTraining.CLASSIFICATION;
+
+    int selectedHour = (int?)ViewBag.HourOfDay ?? 10;
+    int selectedDayOfWeek = (int?)ViewBag.DayOfWeek ?? 1;
+    int selectedMonth = (int?)ViewBag.Month ?? 1;
+    string selectedPeriod = ViewBag.PeriodDay as string ?? "morning";
+    string selectedTypeOfDay = ViewBag.TypeOfDay as string ?? "weekday";
+
+    int selectedDayTypeHourOfDay = (int?)ViewBag.DayTypeHourOfDay ?? 10;
+    string selectedDayTypePeriodDay = ViewBag.DayTypePeriodDay as string ?? "morning";
+    string selectedDayTypetem = ViewBag.DayTypeItem as string ?? "";
+}
+
+<!-- Banner -->
+<div class="bg-success text-white rounded-3 p-4 mb-4 shadow">
+    <div class="d-flex align-items-center">
+        <span class="bg-white bg-opacity-25 rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width:52px;height:52px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-tags" viewBox="0 0 16 16">
+                <path d="M3 2v4.586l7 7L14.586 9l-7-7zM2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586z"/>
+                <path d="M5.5 5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1m0 1a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M1 7.086a1 1 0 0 0 .293.707L8.75 15.25l-.043.043a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 0 7.586V3a1 1 0 0 1 1-1z"/>
+            </svg>
+        </span>
+        <div>
+            <h2 class="fw-bold mb-0">Classificação de Vendas</h2>
+            <p class="mb-0 opacity-75">SDCA MaxEntropy &bull; FastTree Binary &bull; Classificação multiclasse e binária</p>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(trainSuccess))
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <strong>Treino Concluído!</strong> @trainSuccess
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (!string.IsNullOrEmpty(trainError))
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <strong>Treino Falhou:</strong> @trainError
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <!-- Train -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-primary bg-opacity-10 border-0">
+                <h5 class="mb-0 text-primary fw-bold">
+                    <span class="badge bg-primary rounded-pill me-2">1</span>Treinar o Modelo
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Treinar modelos de classificação com dados de ~20.000 vendas.</p>
+                <form method="post" asp-action="Train">
+                    <input type="hidden" name="returnUrl" value="@Url.Action("Classify")" />
+                    <input type="hidden" name="typeOfTraining" value="@currentType"/>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cpu me-1 mb-1" viewBox="0 0 16 16">
+                            <path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2A2.5 2.5 0 0 1 14 4.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14A2.5 2.5 0 0 1 11.5 14v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14A2.5 2.5 0 0 1 2 11.5H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2A2.5 2.5 0 0 1 4.5 2V.5A.5.5 0 0 1 5 0"/>
+                        </svg>
+                        Treinar Modelo
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- C1: Product Classification -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-success bg-opacity-10 border-0">
+                <h5 class="mb-0 text-success fw-bold">
+                    <span class="badge bg-success rounded-pill me-2">2</span>Prever Produto
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Qual produto é mais provável dado o contexto?</p>
+                <form method="post" asp-action="ClassifyProduct">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Hora do Dia</label>
+                        <select name="hourOfDay" class="form-select">
+                            @for (int h = 0; h < 24; h++)
+                            {
+                                <!option value="@h" selected="@(h == selectedHour)">@h:00</!option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Dia da Semana</label>
+                        <select name="dayOfWeek" id="dayOfWeek1" class="form-select">
+                            <!option value="0" selected="@(selectedDayOfWeek == 0)">Domingo</!option>
+                            <!option value="1" selected="@(selectedDayOfWeek == 1)">Segunda-feira</!option>
+                            <!option value="2" selected="@(selectedDayOfWeek == 2)">Terça-feira</!option>
+                            <!option value="3" selected="@(selectedDayOfWeek == 3)">Quarta-feira</!option>
+                            <!option value="4" selected="@(selectedDayOfWeek == 4)">Quinta-feira</!option>
+                            <!option value="5" selected="@(selectedDayOfWeek == 5)">Sexta-feira</!option>
+                            <!option value="6" selected="@(selectedDayOfWeek == 6)">Sábado</!option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Mês</label>
+                        <select name="month" class="form-select">
+                            <!option value="1" selected="@(selectedMonth == 1)">Janeiro</!option>
+                            <!option value="2" selected="@(selectedMonth == 2)">Fevereiro</!option>
+                            <!option value="3" selected="@(selectedMonth == 3)">Março</!option>
+                            <!option value="4" selected="@(selectedMonth == 4)">Abril</!option>
+                            <!option value="5" selected="@(selectedMonth == 5)">Maio</!option>
+                            <!option value="6" selected="@(selectedMonth == 6)">Junho</!option>
+                            <!option value="7" selected="@(selectedMonth == 7)">Julho</!option>
+                            <!option value="8" selected="@(selectedMonth == 8)">Agosto</!option>
+                            <!option value="9" selected="@(selectedMonth == 9)">Setembro</!option>
+                            <!option value="10" selected="@(selectedMonth == 10)">Outubro</!option>
+                            <!option value="11" selected="@(selectedMonth == 11)">Novembro</!option>
+                            <!option value="12" selected="@(selectedMonth == 12)">Dezembro</!option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Período do Dia</label>
+                        <select name="periodDay" class="form-select">
+                            <!option value="morning" selected="@(selectedPeriod == "morning")">Manhã</!option>
+                            <!option value="afternoon" selected="@(selectedPeriod == "afternoon")">Tarde</!option>
+                            <!option value="evening" selected="@(selectedPeriod == "evening")">Anoitecer</!option>
+                            <!option value="night" selected="@(selectedPeriod == "night")">Noite</!option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tipo de Dia</label>
+                        <select id="typeOfDay1" class="form-select" disabled>
+                            <!option value="weekday" selected="@(selectedTypeOfDay == "weekday")">Dia Útil</!option>
+                            <!option value="weekend" selected="@(selectedTypeOfDay == "weekend")">Fim de Semana</!option>
+                        </select>
+                        <input type="hidden" name="typeOfDay" id="typeOfDayHidden1" value="@selectedTypeOfDay" />
+                        <small class="form-text text-muted">Definido automaticamente.</small>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning me-1 mb-1" viewBox="0 0 16 16">
+                            <path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641z"/>
+                        </svg>
+                        Classificar Produto
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- C2: Day Type Classification -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-warning bg-opacity-10 border-0">
+                <h5 class="mb-0 text-warning fw-bold">
+                    <span class="badge bg-warning text-dark rounded-pill me-2">3</span>Prever Tipo de Dia
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">A venda é num dia útil ou fim de semana?</p>
+                <form method="post" asp-action="ClassifyDayType">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Hora do Dia</label>
+                        <select name="hourOfDay" class="form-select">
+                            @for (int h = 0; h < 24; h++)
+                            {
+                                <!option value="@h" selected="@(h == selectedDayTypeHourOfDay)">@h:00</!option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Período do Dia</label>
+                        <select name="periodDay" class="form-select">
+                            <!option value="morning" selected="@(selectedDayTypePeriodDay == "morning")">Manhã</!option>
+                            <!option value="afternoon" selected="@(selectedDayTypePeriodDay == "afternoon")">Tarde</!option>
+                            <!option value="evening" selected="@(selectedDayTypePeriodDay == "evening")">Anoitecer</!option>
+                            <!option value="night" selected="@(selectedDayTypePeriodDay == "night")">Noite</!option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Produto</label>
+                        <select name="item" class="form-select">
+                            @if (uniqueProducts.Any())
+                            {
+                                @foreach (var product in uniqueProducts)
+                                {
+                                    <!option value="@product" selected="@(product == selectedDayTypetem)">@product</!option>
+                                }
+                            }
+                            else
+                            {
+                                <!option value="Coffee" selected="@(selectedDayTypetem == "Coffee")">Coffee</!option>
+                                <!option value="Bread" selected="@(selectedDayTypetem == "Bread")">Bread</!option>
+                                <!option value="Pastry" selected="@(selectedDayTypetem == "Pastry")">Pastry</!option>
+                                <!option value="Tea" selected="@(selectedDayTypetem == "Tea")">Tea</!option>
+                                <!option value="Cake" selected="@(selectedDayTypetem == "Cake")">Cake</!option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning me-1 mb-1" viewBox="0 0 16 16">
+                            <path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641z"/>
+                        </svg>
+                        Classificar Tipo de Dia
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        @if (!string.IsNullOrEmpty(productError))
+        {
+            <div class="alert alert-warning shadow-sm">
+                <strong>Erro:</strong> @productError
+            </div>
+        }
+        @if (!string.IsNullOrEmpty(dayTypeError))
+        {
+            <div class="alert alert-warning shadow-sm">
+                <strong>Erro:</strong> @dayTypeError
+            </div>
+        }
+
+        @*  Product Classification Result (C1)  *@
+        @if (productPrediction != null)
+        {
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="fw-bold mb-0">Resultado — Classificação de Produto</h5>
+                    <p class="text-muted mb-0 mt-1">
+                        Para <strong>@productPrediction.DayName</strong> (@productPrediction.DayType)
+                        às <strong>@(productPrediction.HourOfDay):00</strong> — @productPrediction.Period
+                    </p>
+                </div>
+                <div class="card-body">
+                    <div class="bg-success bg-opacity-10 rounded-3 p-4 text-center mb-4">
+                        <h2 class="text-success fw-bold mb-0">@productPrediction.PredictedProduct</h2>
+                        <small class="text-muted">Produto Previsto</small>
+                    </div>
+
+                    <h6 class="fw-bold text-muted text-uppercase small mb-3">Métricas do Modelo</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="border rounded-3 p-3 text-center">
+                                <h4 class="mb-0 text-primary fw-bold">@productPrediction.ModelAccuracy</h4>
+                                <small class="text-muted">Accuracy (Macro)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded-3 p-3 text-center">
+                                <h4 class="mb-0 text-warning fw-bold">@productPrediction.ModelLogLoss</h4>
+                                <small class="text-muted">Log-Loss</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (productPrediction.TopPredictions.Any())
+                    {
+                        <h6 class="fw-bold text-muted text-uppercase small mb-3">Top 5 Produtos Prováveis</h6>
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-3">#</th>
+                                    <th>Produto</th>
+                                    <th>Probabilidade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ var rank = 1; }
+                                @foreach (var p in productPrediction.TopPredictions)
+                                {
+                                    <tr>
+                                        <td class="ps-3">
+                                            <span class="badge bg-success rounded-pill">@rank</span>
+                                        </td>
+                                        <td><strong>@p.ProductName</strong></td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                                    <div class="progress-bar bg-success" style="width: @p.Percentage%"></div>
+                                                </div>
+                                                <small class="text-muted">@(p.Percentage)%</small>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    rank++;
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </div>
+        }
+
+        @*  Day Type Classification Result (C2)  *@
+        @if (dayTypePrediction != null)
+        {
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 pb-0">
+                    <h5 class="fw-bold mb-0">Resultado — Classificação de Tipo de Dia</h5>
+                    <p class="text-muted mb-0 mt-1">
+                        Para produto <strong>@dayTypePrediction.Item</strong>
+                        às <strong>@(dayTypePrediction.HourOfDay):00</strong> — @dayTypePrediction.Period
+                    </p>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <div class="rounded-3 p-4 text-center @(dayTypePrediction.PredictedIsWeekend ? "bg-info bg-opacity-10" : "bg-success bg-opacity-10")">
+                                <h2 class="fw-bold mb-0 @(dayTypePrediction.PredictedIsWeekend ? "text-info" : "text-success")">
+                                    @(dayTypePrediction.PredictedIsWeekend ? "Fim de Semana" : "Dia Útil")
+                                </h2>
+                                <small class="text-muted">Tipo de Dia Previsto</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="bg-primary bg-opacity-10 rounded-3 p-4 text-center">
+                                <h2 class="text-primary fw-bold mb-0">@(dayTypePrediction.Probability)%</h2>
+                                <small class="text-muted">Probabilidade</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-muted text-uppercase small mb-3">Métricas do Modelo</h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="border rounded-3 p-3 text-center">
+                                <h4 class="mb-0 text-primary fw-bold">@dayTypePrediction.ModelAccuracy</h4>
+                                <small class="text-muted">Accuracy</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded-3 p-3 text-center">
+                                <h4 class="mb-0 text-success fw-bold">@dayTypePrediction.ModelAUC</h4>
+                                <small class="text-muted">AUC</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border rounded-3 p-3 text-center">
+                                <h4 class="mb-0 text-danger fw-bold">@dayTypePrediction.ModelF1</h4>
+                                <small class="text-muted">F1-Score</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (productPrediction == null && dayTypePrediction == null && string.IsNullOrEmpty(productError) && string.IsNullOrEmpty(dayTypeError))
+        {
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center text-muted py-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-pie-chart mb-3 opacity-25" viewBox="0 0 16 16">
+                        <path d="M7.5 1.018a7 7 0 0 0-4.79 11.566L7.5 7.793zm1 0V7.5h6.482A7 7 0 0 0 8.5 1.018M14.982 8.5H8.207l-4.79 4.79A7 7 0 0 0 14.982 8.5M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8"/>
+                    </svg>
+                    <h4>Sem classificação ainda</h4>
+                    <p class="mb-0">Primeiro <strong>Treine o Modelo</strong>, depois selecione os parâmetros e clique num dos botões de classificação.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var daySelect = document.getElementById('dayOfWeek1');
+            var typeSelect = document.getElementById('typeOfDay1');
+            var typeHidden = document.getElementById('typeOfDayHidden1');
+
+            function syncTypeOfDay() {
+                var day = parseInt(daySelect.value);
+                var isWeekend = (day === 0 || day === 6);
+                var value = isWeekend ? 'weekend' : 'weekday';
+                typeSelect.value = value;
+                typeHidden.value = value;
+            }
+
+            daySelect.addEventListener('change', syncTypeOfDay);
+            syncTypeOfDay();
+        });
+    </script>
+}

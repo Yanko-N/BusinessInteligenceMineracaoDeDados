@@ -1,6 +1,178 @@
 ﻿@{
-    ViewData["Title"] = "Política de Privacidade";
+    ViewData["Title"] = "Sobre o Projeto";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Utilize esta página para detalhar a política de privacidade do seu site.</p>
+<!-- Header -->
+<div class="bg-primary text-white rounded-3 p-5 mb-5 text-center shadow">
+    <h1 class="display-5 fw-bold mb-3">Sobre o Projeto</h1>
+    <p class="lead mb-0">Business Intelligence & Mineração de Dados</p>
+</div>
+
+<!-- About -->
+<div class="row g-4 mb-5">
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="fw-bold mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-mortarboard text-primary me-2 mb-1" viewBox="0 0 16 16">
+                        <path d="M8.211 2.047a.5.5 0 0 0-.422 0l-7.5 3.5a.5.5 0 0 0 .025.917l7.5 3a.5.5 0 0 0 .372 0L14 7.14V13a1 1 0 0 0-1 1v2h3v-2a1 1 0 0 0-1-1V6.739l.686-.275a.5.5 0 0 0 .025-.917zM8 8.46 1.758 5.965 8 3.052l6.242 2.913z"/>
+                        <path d="M4.176 9.032a.5.5 0 0 0-.656.327l-.5 1.7a.5.5 0 0 0 .294.605l4.5 1.8a.5.5 0 0 0 .372 0l4.5-1.8a.5.5 0 0 0 .294-.605l-.5-1.7a.5.5 0 0 0-.656-.327L8 10.466z"/>
+                    </svg>
+                    Contexto Académico
+                </h4>
+                <p class="mb-2">
+                    Este projeto foi desenvolvido no âmbito da unidade curricular de
+                    <strong>Business Intelligence & Mineração de Dados</strong>, em contexto universitário.
+                </p>
+                <p class="mb-2">
+                    O objetivo é aplicar técnicas de Machine Learning a um dataset real de vendas de padaria
+                    (<em>bakery_sales_revised.csv</em> com 20.507 vendas, 94 produtos, de outubro 2016 a abril 2017),
+                    respondendo a perguntas de negócio através de modelos de regressão, classificação e previsão temporal.
+                </p>
+                <p class="mb-0">
+                    A aplicação foi construída com <strong>ASP.NET Core MVC</strong>, <strong>ML.NET</strong> e <strong>Bootstrap 5</strong>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ML Models -->
+<h3 class="fw-bold text-center mb-4">Modelos de Machine Learning Utilizados</h3>
+
+<div class="row g-4 mb-5">
+    <!-- Regression -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <span class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:56px;height:56px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07"/>
+                    </svg>
+                </span>
+                <h5 class="fw-bold">Regressão</h5>
+                <span class="badge bg-primary mb-2">FastTree Regression</span>
+                <p class="text-muted small mb-2">Prever o número total de artigos vendidos num dia.</p>
+                <ul class="list-unstyled text-muted small mb-0">
+                    <li><strong>Algoritmo:</strong> FastTree (Gradient Boosted Trees)</li>
+                    <li><strong>Métricas:</strong> R², MAE, RMSE</li>
+                    <li><strong>Features:</strong> DayOfWeek, Month, IsWeekend</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Multi-class Classification -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <span class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:56px;height:56px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-tags" viewBox="0 0 16 16">
+                        <path d="M3 2v4.586l7 7L14.586 9l-7-7zM2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586z"/>
+                        <path d="M5.5 5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1m0 1a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M1 7.086a1 1 0 0 0 .293.707L8.75 15.25l-.043.043a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 0 7.586V3a1 1 0 0 1 1-1z"/>
+                    </svg>
+                </span>
+                <h5 class="fw-bold">Classificação Multiclasse</h5>
+                <span class="badge bg-success mb-2">SDCA Maximum Entropy</span>
+                <p class="text-muted small mb-2">Prever qual produto será mais vendido num cenário.</p>
+                <ul class="list-unstyled text-muted small mb-0">
+                    <li><strong>Algoritmo:</strong> SDCA (Stochastic Dual Coordinate Ascent)</li>
+                    <li><strong>Métricas:</strong> Accuracy, Log-Loss</li>
+                    <li><strong>Features:</strong> Hour, DayOfWeek, Month, Period, DayType</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Binary Classification -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <span class="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:56px;height:56px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-toggles" viewBox="0 0 16 16">
+                        <path d="M4.5 9a3.5 3.5 0 1 0 0 7h7a3.5 3.5 0 1 0 0-7zm7 6a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5m-7-14a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5m2.45 0A3.49 3.49 0 0 1 8 3.5 3.49 3.49 0 0 1 6.95 6h4.55a2.5 2.5 0 0 0 0-5zM4.5 0h7a3.5 3.5 0 1 1 0 7h-7a3.5 3.5 0 1 1 0-7"/>
+                    </svg>
+                </span>
+                <h5 class="fw-bold">Classificação Binária</h5>
+                <span class="badge bg-warning text-dark mb-2">FastTree Binary</span>
+                <p class="text-muted small mb-2">Prever se uma venda é de dia de semana ou fim de semana.</p>
+                <ul class="list-unstyled text-muted small mb-0">
+                    <li><strong>Algoritmo:</strong> FastTree (Gradient Boosted Trees)</li>
+                    <li><strong>Métricas:</strong> Accuracy, AUC, F1-Score</li>
+                    <li><strong>Features:</strong> HourOfDay, PeriodDay, Item</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forecasting -->
+    <div class="col-md-6 col-lg-3">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center p-4">
+                <span class="bg-info bg-opacity-10 text-info rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width:56px;height:56px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-calendar-range" viewBox="0 0 16 16">
+                        <path d="M9 7a1 1 0 0 1 1-1h5v2h-5a1 1 0 0 1-1-1M1 9h4a1 1 0 0 1 0 2H1z"/>
+                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+                    </svg>
+                </span>
+                <h5 class="fw-bold">Previsão Temporal</h5>
+                <span class="badge bg-info mb-2">SSA Forecasting</span>
+                <p class="text-muted small mb-2">Prever vendas diárias futuras com base em padrões temporais.</p>
+                <ul class="list-unstyled text-muted small mb-0">
+                    <li><strong>Algoritmo:</strong> SSA (Singular Spectrum Analysis)</li>
+                    <li><strong>Métricas:</strong> MAE, RMSE, intervalo de confiança 95%</li>
+                    <li><strong>Features:</strong> Série temporal de vendas diárias</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tech Stack -->
+<div class="row g-4 mb-5">
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="fw-bold mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-stack text-primary me-2 mb-1" viewBox="0 0 16 16">
+                        <path d="m14.12 10.163 1.715.858c.22.11.22.424 0 .534L8.267 15.34a.6.6 0 0 1-.534 0L.165 11.555a.299.299 0 0 1 0-.534l1.716-.858 5.317 2.659c.505.252 1.1.252 1.604 0l5.317-2.66zM7.733.707a.6.6 0 0 1 .534 0l7.568 3.784a.3.3 0 0 1 0 .535L8.267 8.81a.6.6 0 0 1-.534 0L.165 5.026a.299.299 0 0 1 0-.535z"/>
+                        <path d="m14.12 6.576 1.715.858c.22.11.22.424 0 .534l-7.568 3.784a.6.6 0 0 1-.534 0L.165 7.968a.299.299 0 0 1 0-.534l1.716-.858 5.317 2.659c.505.252 1.1.252 1.604 0z"/>
+                    </svg>
+                    Tech Stack
+                </h4>
+                <div class="row text-center g-3">
+                    <div class="col-4 col-md">
+                        <div class="bg-light rounded-3 p-3">
+                            <strong class="d-block text-primary">.NET 8</strong>
+                            <small class="text-muted">Runtime</small>
+                        </div>
+                    </div>
+                    <div class="col-4 col-md">
+                        <div class="bg-light rounded-3 p-3">
+                            <strong class="d-block text-primary">ASP.NET Core MVC</strong>
+                            <small class="text-muted">Web Framework</small>
+                        </div>
+                    </div>
+                    <div class="col-4 col-md">
+                        <div class="bg-light rounded-3 p-3">
+                            <strong class="d-block text-primary">ML.NET</strong>
+                            <small class="text-muted">Machine Learning</small>
+                        </div>
+                    </div>
+                    <div class="col-4 col-md">
+                        <div class="bg-light rounded-3 p-3">
+                            <strong class="d-block text-primary">Bootstrap 5</strong>
+                            <small class="text-muted">UI Framework</small>
+                        </div>
+                    </div>
+                    <div class="col-4 col-md">
+                        <div class="bg-light rounded-3 p-3">
+                            <strong class="d-block text-primary">Chart.js</strong>
+                            <small class="text-muted">Visualização</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
