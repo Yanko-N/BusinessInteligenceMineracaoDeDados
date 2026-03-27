@@ -1,4 +1,4 @@
-# Bakery Sales Intelligence — Data Mining & ML Prediction
+# Bakery Sales Intelligence & Data Mining with ML Prediction
 
 An ASP.NET Core MVC application that applies machine learning (ML.NET) to historical bakery sales data, enabling sales prediction, product classification, day-type classification, and time-series forecasting.
 
