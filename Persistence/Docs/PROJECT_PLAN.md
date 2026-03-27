@@ -96,49 +96,64 @@
 
 ## 4. Website Pages & Features
 
-| Page / Section             | Purpose                                                        | Models Used     |
-|----------------------------|----------------------------------------------------------------|-----------------|
-| **Dashboard**              | Overview charts — daily sales, top products, period breakdown  | —               |
-| **Regression Predictor**   | Form: select day type, period, day of week → predicts sales count | R1, R2, R3   |
-| **Classification Predictor** | Form: input time/period/day → predicts most likely product or day type | C1, C2, C3 |
-| **Forecasting**            | Interactive chart showing predicted sales for the next N days  | F1, F2          |
-| **Data Explorer**          | Table/grid with filtering/sorting of the raw bakery sales data | —               |
+| Page / Section             | Purpose                                                        | Models Used     | Status   |
+|----------------------------|----------------------------------------------------------------|-----------------|---------:|
+| **Home (Index)**           | Hero section with project description and link to predictions  | —               | ✅ Done  |
+| **Regression Predictor**   | Form: select day type, period, day of week → predicts sales count, top 5 products, metrics | R1, R2 | ✅ Done  |
+| **Dashboard**              | Overview charts — daily sales, top products, period breakdown  | —               | Planned  |
+| **Classification Predictor** | Form: input time/period/day → predicts most likely product or day type | C1, C2, C3 | Planned  |
+| **Forecasting**            | Interactive chart showing predicted sales for the next N days  | F1, F2          | Planned  |
+| **Data Explorer**          | Table/grid with filtering/sorting of the raw bakery sales data | —               | Planned  |
 
 ---
 
 ## 5. Architecture Overview
 
 ```
-┌─────────────────────────────────────────────────┐
-│              BusinessInteligence                │
-│            (ASP.NET Core MVC Web)               │
-│  Controllers ─► Views (Razor + Chart.js)        │
-└────────────────────┬────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│              BusinessInteligence                     │
+│            (ASP.NET Core MVC Web)                    │
+│  Controllers/                                        │
+│    HomeController  (Train, PredictResult, Index)     │
+│  Views/                                              │
+│    Home/  Index.cshtml, Predict.cshtml, Privacy      │
+│    Shared/ _Layout.cshtml (Bootstrap 5, pt-PT)       │
+└────────────────────┬─────────────────────────────────┘
+                     │ depends on (IMediator)
+┌────────────────────▼─────────────────────────────────┐
+│                Application                           │
+│  Mediator ─► Request Handlers                        │
+│  Features/                                           │
+│    Commands/                                         │
+│      TrainSalesPredictionCommand  ✅                 │
+│    Queries/                                          │
+│      PredictDailySalesQuery       ✅                 │
+│      (planned) PredictProductQuery                   │
+│      (planned) PredictDayTypeQuery                   │
+│      (planned) ForecastDailySalesQuery               │
+│  Core/                                               │
+│    CsvParser       (CSV → List<Sale>)        ✅      │
+│    SalesTrainer    (statistical aggregation)  ✅     │
+│    Mediator        (custom IMediator impl)    ✅     │
+│  Classes/  Result<T>, AppException                   │
+│  Models/   TrainResult, PredictionResult,            │
+│            ProductPrediction                         │
+│  Interfaces/ IMediator, IRequest, IRequestHandler    │
+│  Extensions/ ServiceCollectionExtensions (DI)        │
+└────────────────────┬─────────────────────────────────┘
                      │ depends on
-┌────────────────────▼────────────────────────────┐
-│                Application                      │
-│  Mediator ─► Request Handlers                   │
-│  Features/                                      │
-│    Sales/                                       │
-│      Commands/ (CreateSaleCommand)              │
-│      Queries/  (GetAllSalesQuery)               │
-│    Predictions/                                 │
-│      Regression/   (PredictSalesCount)          │
-│      Classification/ (PredictProduct,           │
-│                       PredictDayType)           │
-│      Forecasting/  (ForecastDailySales)         │
-│  Core/                                          │
-│    SalesTrainer   (train & persist models)      │
-│    ML.NET MLContext                             │
-└────────────────────┬────────────────────────────┘
-                     │ depends on
-┌────────────────────▼────────────────────────────┐
-│                Persistence                      │
-│  Models/  (Sale)                                │
-│  Enums/   (PeriodDay, TypeOfDay)                │
-│  Docs/    (CSV, this plan)                      │
-└─────────────────────────────────────────────────┘
+┌────────────────────▼─────────────────────────────────┐
+│                Persistence                           │
+│  Models/  (Sale)                                     │
+│  Enums/   (PeriodDay, TypeOfDay) — value objects     │
+│  Docs/    (CSV, this plan, metrics guide)            │
+└──────────────────────────────────────────────────────┘
 ```
+
+> **Note:** ML.NET packages (`Microsoft.ML` v5.0.0, `Microsoft.ML.AutoML` v0.23.0) are
+> installed in Application.csproj but **not yet used**. The current `SalesTrainer` uses
+> statistical aggregation (group-by averages, std deviation) rather than ML pipelines.
+> Migration to ML.NET trainers is planned for future phases.
 
 ---
 
@@ -147,33 +162,37 @@
 ### Phase 1 — Data & Infrastructure
 - [x] CSV loaded and Sale model created
 - [x] Mediator pattern set up
-- [ ] CSV parsing service (read CSV → `List<Sale>`)
-- [ ] Feature engineering pipeline (derived columns)
+- [x] CSV parsing service — `CsvParser.ParseCsv()` reads CSV → `List<Sale>`
+- [x] Feature engineering — `SalesTrainer.Train()` derives DayOfWeek, DailySalesCount, period aggregates, top products
 
 ### Phase 2 — Model Training
-- [ ] **Regression trainer** — predict daily sales count
+- [x] **Sales predictor** — statistical aggregation (daily & period averages, std dev, R², MAE, RMSE)
+- [ ] **Regression trainer (ML.NET)** — upgrade to FastTree / SDCA / AutoML pipelines
 - [ ] **Multi-class classifier** — predict product given context
 - [ ] **Binary classifier** — predict weekday vs. weekend
 - [ ] **Forecasting trainer** — SSA on daily aggregated series
 - [ ] Model persistence (save/load `.zip` model files)
 
 ### Phase 3 — Prediction Handlers
-- [ ] `PredictSalesCountHandler` (Regression)
+- [x] `PredictDailySalesQuery` handler — predicts daily & period sales + top 5 products + confidence
 - [ ] `PredictProductHandler` (Classification)
 - [ ] `PredictDayTypeHandler` (Binary Classification)
 - [ ] `ForecastDailySalesHandler` (Forecasting)
 
 ### Phase 4 — Web UI
+- [x] Home page (Index.cshtml) — hero section with link to predictions
+- [x] Regression prediction form + results (Predict.cshtml) — dropdowns, auto-sync day type via JS
 - [ ] Dashboard page with summary charts (Chart.js)
-- [ ] Regression prediction form + results
 - [ ] Classification prediction form + results
 - [ ] Forecasting chart (interactive date range)
 - [ ] Data explorer page (filterable table)
 
 ### Phase 5 — Polish
-- [ ] Model evaluation metrics display
-- [ ] Error handling and loading states
-- [ ] Responsive layout
+- [x] Model evaluation metrics display (R², MAE, RMSE, confidence, sample count, std dev)
+- [x] Responsive layout (Bootstrap 5 two-column grid)
+- [x] Error handling — Result<T> pattern, weekday/weekend validation, TempData alerts
+- [ ] Loading states during training
+- [ ] AppException middleware integration
 
 ---
 
@@ -181,8 +200,8 @@
 
 | Category        | Question                                                 | Model Type          | Algorithm           |
 |-----------------|----------------------------------------------------------|---------------------|---------------------|
-| **Regression**  | How many items will be sold on a given day?              | Regression          | FastTree / AutoML   |
-| **Regression**  | How many transactions per time period?                   | Regression          | SDCA / AutoML       |
+| **Regression**  | How many items will be sold on a given day?              | Regression          | ✅ Statistical (planned: FastTree / AutoML) |
+| **Regression**  | How many transactions per time period?                   | Regression          | ✅ Statistical (planned: SDCA / AutoML)     |
 | **Regression**  | Average items per transaction for a day type?            | Regression          | LightGBM / AutoML   |
 | **Classification** | What product is most likely at a given time?          | Multi-class Classif.| LightGBM / FastTree |
 | **Classification** | Is the transaction on a weekday or weekend?           | Binary Classif.     | Logistic / FastTree |

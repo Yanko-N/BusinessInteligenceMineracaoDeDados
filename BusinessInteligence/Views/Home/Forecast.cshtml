@@ -1,0 +1,233 @@
+@using Application.Enums
+@using System.Globalization
+@{
+    ViewData["Title"] = "Previsão Temporal";
+    var forecast = ViewBag.Forecast as Application.Models.ForecastResult;
+    var forecastError = ViewBag.ForecastError as string;
+    var trainSuccess = TempData["TrainSuccess"] as string;
+    var trainError = TempData["TrainError"] as string;
+    int currentType = (int)TypeOfTraining.FORECASTING;
+    int selectedHorizon = (int?)ViewBag.SelectedHorizon ?? 30;
+}
+
+<!-- Hero -->
+<div class="bg-info text-white rounded-3 p-4 mb-4 shadow">
+    <div class="d-flex align-items-center">
+        <span class="bg-white bg-opacity-25 rounded-circle d-inline-flex align-items-center justify-content-center me-3" style="width:52px;height:52px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-calendar-range" viewBox="0 0 16 16">
+                <path d="M9 7a1 1 0 0 1 1-1h5v2h-5a1 1 0 0 1-1-1M1 9h4a1 1 0 0 1 0 2H1z"/>
+                <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+            </svg>
+        </span>
+        <div>
+            <h2 class="fw-bold mb-0">Previsão Temporal de Vendas</h2>
+            <p class="mb-0 opacity-75">SSA (Singular Spectrum Analysis) &bull; Forecasting de vendas diárias futuras</p>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(trainSuccess))
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <strong>Treino Concluído!</strong> @trainSuccess
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (!string.IsNullOrEmpty(trainError))
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <strong>Treino Falhou:</strong> @trainError
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <!-- Train -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-primary bg-opacity-10 border-0">
+                <h5 class="mb-0 text-primary fw-bold">
+                    <span class="badge bg-primary rounded-pill me-2">1</span>Treinar o Modelo
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Treinar modelo SSA com série temporal de vendas diárias.</p>
+                <form method="post" asp-action="Train">
+                    <input type="hidden" name="returnUrl" value="@Url.Action("Forecast")" />
+                    <input type="hidden" name="typeOfTraining" value="@currentType" />
+                    <button type="submit" class="btn btn-primary w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cpu me-1 mb-1" viewBox="0 0 16 16">
+                            <path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2A2.5 2.5 0 0 1 14 4.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14A2.5 2.5 0 0 1 11.5 14v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14A2.5 2.5 0 0 1 2 11.5H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2A2.5 2.5 0 0 1 4.5 2V.5A.5.5 0 0 1 5 0"/>
+                        </svg>
+                        Treinar Modelo
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Forecast parameters -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-info bg-opacity-10 border-0">
+                <h5 class="mb-0 text-info fw-bold">
+                    <span class="badge bg-info rounded-pill me-2">2</span>Gerar Previsão
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">Quantos dias no futuro deseja prever?</p>
+                <form method="post" asp-action="ForecastResult">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Horizonte (dias)</label>
+                        <select name="horizon" class="form-select">
+                            <!option value="7" selected="@(selectedHorizon == 7)">7 dias</!option>
+                            <!option value="14" selected="@(selectedHorizon == 14)">14 dias</!option>
+                            <!option value="30" selected="@(selectedHorizon == 30)">30 dias</!option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-info w-100 text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning me-1 mb-1" viewBox="0 0 16 16">
+                            <path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641z"/>
+                        </svg>
+                        Prever
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        @if (!string.IsNullOrEmpty(forecastError))
+        {
+            <div class="alert alert-warning shadow-sm">
+                <strong>Erro:</strong> @forecastError
+            </div>
+        }
+
+        @if (forecast != null)
+        {
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0">
+                    <h5 class="fw-bold mb-0">Previsão de Vendas — Próximos @forecast.Horizon Dias</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="forecastChart" height="300"></canvas>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0">
+                    <h5 class="fw-bold mb-0">Dados da Previsão</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th class="ps-4">Data</th>
+                                    <th>Vendas Previstas</th>
+                                    <th>Limite Inferior</th>
+                                    <th>Limite Superior</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var point in forecast.Forecast)
+                                {
+                                    <tr>
+                                        <td class="ps-4">@point.Date.ToString("dd/MM/yyyy")</td>
+                                        <td><strong class="text-primary">@point.PredictedSales</strong></td>
+                                        <td class="text-muted">@point.LowerBound</td>
+                                        <td class="text-muted">@point.UpperBound</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (string.IsNullOrEmpty(forecastError))
+        {
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center text-muted py-5">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="currentColor" class="bi bi-graph-up-arrow mb-3 opacity-25" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm6.5 4a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h4.793l-5.147 5.146a.5.5 0 0 0 .708.708L12 6.707V11.5a.5.5 0 0 0 1 0v-7a.5.5 0 0 0-.5-.5z"/>
+                    </svg>
+                    <h4>Sem previsão ainda</h4>
+                    <p class="mb-0">Primeiro <strong>Treine o Modelo</strong>, depois selecione o horizonte e clique em <strong>Prever</strong>.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    @if (forecast != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                var ctx = document.getElementById('forecastChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [@Html.Raw(string.Join(",", forecast.Forecast.Select(f => $"'{f.Date:dd/MM}'")))],
+                        datasets: [
+                            {
+                                label: 'Limite Superior',
+                                data: [@Html.Raw(string.Join(",", forecast.Forecast.Select(f => f.UpperBound.ToString(CultureInfo.InvariantCulture))))],
+                                borderColor: 'rgba(54, 162, 235, 0.3)',
+                                borderDash: [5, 5],
+                                fill: false,
+                                pointRadius: 0
+                            },
+                            {
+                                label: 'Previsão',
+                                data: [@Html.Raw(string.Join(",", forecast.Forecast.Select(f => f.PredictedSales.ToString(CultureInfo.InvariantCulture))))],
+                                borderColor: 'rgb(54, 162, 235)',
+                                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                                fill: false,
+                                pointRadius: 3,
+                                borderWidth: 2
+                            },
+                            {
+                                label: 'Limite Inferior',
+                                data: [@Html.Raw(string.Join(",", forecast.Forecast.Select(f => f.LowerBound.ToString(CultureInfo.InvariantCulture))))],
+                                borderColor: 'rgba(54, 162, 235, 0.3)',
+                                borderDash: [5, 5],
+                                fill: '-1',
+                                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                                pointRadius: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Previsão de Vendas Diárias (SSA)'
+                            },
+                            legend: {
+                                position: 'bottom'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Artigos Vendidos'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Data'
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    }
+}

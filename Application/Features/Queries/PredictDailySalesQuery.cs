@@ -8,6 +8,7 @@ namespace Application.Features.Queries
     public class PredictDailySalesQuery : IRequest<Result<PredictionResult>>
     {
         public int DayOfWeek { get; set; }
+        public int Month { get; set; } = DateTime.Today.Month;
         public string PeriodDay { get; set; } = "morning";
         public string TypeOfDay { get; set; } = "weekday";
 
@@ -26,7 +27,7 @@ namespace Application.Features.Queries
                     return Task.FromResult(Result<PredictionResult>.Failure("Modelo ainda não treinado. Por favor, treine o modelo primeiro."));
                 }
 
-                // Validate weekend/weekday consistency
+                // Validate weekend/weekday 
                 var isWeekendDay = request.DayOfWeek == 0 || request.DayOfWeek == 6; // Sunday or Saturday
                 var isWeekendType = string.Equals(request.TypeOfDay, "weekend", StringComparison.OrdinalIgnoreCase);
 
@@ -42,7 +43,7 @@ namespace Application.Features.Queries
                         $"{(DayOfWeek)request.DayOfWeek} é um dia útil. Por favor, selecione 'Dia útil' como tipo de dia."));
                 }
 
-                var result = _trainer.Predict(request.DayOfWeek, request.PeriodDay, request.TypeOfDay);
+                var result = _trainer.Predict(request.DayOfWeek, request.Month, request.PeriodDay, request.TypeOfDay);
 
                 if(result == null)
                 {

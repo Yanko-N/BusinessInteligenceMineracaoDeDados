@@ -14,5 +14,6 @@ namespace Application.Models
         public double Confidence { get; set; }
         public int SampleCount { get; set; }
         public double StandardDeviation { get; set; }
+        public bool UsesMLEngine { get; set; }
     }
 }

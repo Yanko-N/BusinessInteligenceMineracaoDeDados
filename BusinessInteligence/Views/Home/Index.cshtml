@@ -1,19 +1,114 @@
 ﻿@{
     ViewData["Title"] = "Página Inicial";
+    var trainSuccess = TempData["TrainSuccess"] as string;
+    var trainError = TempData["TrainError"] as string;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Inteligência de Vendas de Padaria</h1>
-    <p class="lead">Business Intelligence & Mineração de Dados . Previsão de vendas de padaria.</p>
-    <hr />
-    <div class="row mt-4">
-        <div class="col-md-6 offset-md-3">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Previsão de Vendas Diárias</h5>
-                    <p class="card-text">Quantos artigos serão vendidos num determinado dia? Treine o modelo com dados históricos e preveja vendas por dia da semana, período e tipo de dia.</p>
-                    <a asp-action="Predict" class="btn btn-primary">Ir para Previsões</a>
+<!-- Initial Part Welcoming banner basically -->
+<div class="bg-primary text-white rounded-3 p-5 mb-5 text-center shadow">
+    <h1 class="display-4 fw-bold mb-3">Business Intelligence & Mineração de Dados</h1>
+    <p class="lead mb-4 fs-5">Machine Learning</p>
+    <hr class="border-light opacity-50 w-50 mx-auto mb-4" />
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <form method="post" asp-action="Train">
+                <input type="hidden" name="returnUrl" value="@Url.Action("Index")" />
+                <input type="hidden" name="typeOfTraining" value="0" />
+                <button type="submit" class="btn btn-light btn-lg w-100 fw-semibold shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-cpu me-2 mb-1" viewBox="0 0 16 16">
+                        <path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2A2.5 2.5 0 0 1 14 4.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14A2.5 2.5 0 0 1 11.5 14v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14A2.5 2.5 0 0 1 2 11.5H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2A2.5 2.5 0 0 1 4.5 2V.5A.5.5 0 0 1 5 0m-.5 3A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13h7a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 11.5 3zM5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5zM6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5z"/>
+                    </svg>
+                    Treinar Modelos
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(trainSuccess))
+{
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <strong>Treino Concluído!</strong> @trainSuccess
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (!string.IsNullOrEmpty(trainError))
+{
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <strong>Treino Falhou:</strong> @trainError
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Cards -->
+<div class="row g-4 mb-5">
+    <!-- Regression -->
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body d-flex flex-column text-center p-4">
+                <div class="mb-3">
+                    <span class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width:64px;height:64px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M0 0h1v15h15v1H0zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07"/>
+                        </svg>
+                    </span>
                 </div>
+                <h5 class="card-title fw-bold">Regressão</h5>
+                <p class="card-text text-muted flex-grow-1">Quantos artigos serão vendidos num determinado dia? Previsão com regressão linear e ML.NET.</p>
+                <a asp-action="Predict" class="btn btn-outline-primary mt-auto">
+                    Explorar
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right ms-1" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Classification -->
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body d-flex flex-column text-center p-4">
+                <div class="mb-3">
+                    <span class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center" style="width:64px;height:64px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-tags" viewBox="0 0 16 16">
+                            <path d="M3 2v4.586l7 7L14.586 9l-7-7zM2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586z"/>
+                            <path d="M5.5 5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1m0 1a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3M1 7.086a1 1 0 0 0 .293.707L8.75 15.25l-.043.043a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 0 7.586V3a1 1 0 0 1 1-1z"/>
+                        </svg>
+                    </span>
+                </div>
+                <h5 class="card-title fw-bold">Classificação</h5>
+                <p class="card-text text-muted flex-grow-1">Que produto seria mais vendido perante um cenário? Classificação multiclasse e binária.</p>
+                <a asp-action="Classify" class="btn btn-outline-success mt-auto">
+                    Explorar
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right ms-1" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forecasting -->
+    <div class="col-md-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body d-flex flex-column text-center p-4">
+                <div class="mb-3">
+                    <span class="bg-info bg-opacity-10 text-info rounded-circle d-inline-flex align-items-center justify-content-center" style="width:64px;height:64px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-calendar-range" viewBox="0 0 16 16">
+                            <path d="M9 7a1 1 0 0 1 1-1h5v2h-5a1 1 0 0 1-1-1M1 9h4a1 1 0 0 1 0 2H1z"/>
+                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4z"/>
+                        </svg>
+                    </span>
+                </div>
+                <h5 class="card-title fw-bold">Previsão Temporal</h5>
+                <p class="card-text text-muted flex-grow-1">Quantidade de artigos vendidos num espaço de tempo. Forecasting com SSA (Singular Spectrum Analysis).</p>
+                <a asp-action="Forecast" class="btn btn-outline-info mt-auto">
+                    Explorar
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-right ms-1" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                    </svg>
+                </a>
             </div>
         </div>
     </div>
