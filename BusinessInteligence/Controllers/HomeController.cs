@@ -226,6 +226,7 @@ namespace BusinessInteligence.Controllers
                     .ToList();
 
                 htmlFiles = Directory.GetFiles(chartsDir, "*.html")
+                    .Where(f => !Path.GetFileName(f).Equals("notebook_report.html", StringComparison.OrdinalIgnoreCase))
                     .Select(f => "/charts/" + Path.GetFileName(f))
                     .OrderBy(f => f)
                     .ToList();
@@ -233,6 +234,13 @@ namespace BusinessInteligence.Controllers
 
             ViewBag.PngCharts = pngFiles;
             ViewBag.HtmlCharts = htmlFiles;
+            return View();
+        }
+
+        public IActionResult Notebook()
+        {
+            var reportPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "charts", "notebook_report.html");
+            ViewBag.ReportExists = System.IO.File.Exists(reportPath);
             return View();
         }
 
