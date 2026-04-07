@@ -212,6 +212,30 @@ namespace BusinessInteligence.Controllers
             return View();
         }
 
+        public IActionResult Analytics()
+        {
+            var chartsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "charts");
+            var pngFiles = new List<string>();
+            var htmlFiles = new List<string>();
+
+            if (Directory.Exists(chartsDir))
+            {
+                pngFiles = Directory.GetFiles(chartsDir, "*.png")
+                    .Select(f => "/charts/" + Path.GetFileName(f))
+                    .OrderBy(f => f)
+                    .ToList();
+
+                htmlFiles = Directory.GetFiles(chartsDir, "*.html")
+                    .Select(f => "/charts/" + Path.GetFileName(f))
+                    .OrderBy(f => f)
+                    .ToList();
+            }
+
+            ViewBag.PngCharts = pngFiles;
+            ViewBag.HtmlCharts = htmlFiles;
+            return View();
+        }
+
         [HttpPost]
         [ActionName("ForecastResult")]
         public async Task<IActionResult> ForecastPost(int horizon = 30)
